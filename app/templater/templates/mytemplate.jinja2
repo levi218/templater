@@ -1,0 +1,145 @@
+{% extends "layout.jinja2" %}
+
+{% block content %}
+<div class="px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+    <h1 class="display-4">Templater</h1>
+    <p class="lead">Quickly generate docx/odt documents from template using data from csv.</p>
+</div>
+
+<ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" id="pills-template-tab" data-toggle="pill" href="#pills-template" role="tab" aria-controls="pills-template" aria-selected="true">
+        Upload Template
+        </a>
+    </li>
+    <li class="nav-item">
+        <span class="nav-link disabled">
+        >
+        </span>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link disabled" id="pills-datatable-tab" data-toggle="pill" href="#pills-datatable" role="tab" aria-controls="pills-datatable" aria-selected="false">
+        Upload Data Table
+        </a>
+    </li>
+    <li class="nav-item">
+        <span class="nav-link disabled">
+        >
+        </span>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link disabled" id="pills-render-tab" data-toggle="pill" href="#pills-render" role="tab" aria-controls="pills-render" aria-selected="false">
+        Render
+        </a>
+    </li>
+    <li class="nav-item">
+        <span class="nav-link disabled">
+        >
+        </span>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link disabled" id="pills-result-tab" data-toggle="pill" href="#pills-result" role="tab" aria-controls="pills-result" aria-selected="false">
+        Download Generated Files
+        </a>
+    </li>
+</ul>
+<div class="tab-content" id="pills-tabContent">
+    <div class="tab-pane fade show active" id="pills-template" role="tabpanel" aria-labelledby="pills-template-tab">
+        <div class="row">
+            <div class="col-md">
+                <div class="form-group files">
+                    <label>Upload Your Template </label>
+                    <input type="file" id="template-file" class="form-control" multiple="" accept=".docx, .odt"/>
+                    <progress id="progress-template" value="0" max="100" style="width:100%;"></progress>
+                </div>
+                <div class='text-center'>
+                    <span id="template-next-group" class="d-none">
+                        <input type='button' onclick="activeTabDataTable()" value='Use this template' />
+                        or
+                    </span>
+                    <input type='button' onclick="uploadTemplate()" value='Upload Template' />
+                </div>
+            </div>
+        </div>
+        <div class="row d-none" id="template-preview">
+            <div class="col-md">
+                <div class="form-group">
+                    <label>Preview </label>
+                    <iframe id="iframe-template-preview" style="width:100%; height:500px"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="pills-datatable" role="tabpanel" aria-labelledby="pills-datatable-tab">
+
+        <div class="row">
+            <div class="col-md">
+                <div class="form-group files">
+                    <label>Upload Your Data Table </label>
+                    <input type="file" id="data-table-file" class="form-control" multiple="" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"/>
+                    <progress id="progress-data-table" value="0" max="100" style="width:100%;"></progress>
+                </div>
+                <div class='text-center'>
+                    <span id="data-next-group" class="d-none">
+                        <input type='button' onclick="verifyTemplate()" value='Use this data table' />
+                        or
+                    </span>
+                    <input type='button' onclick="uploadData()" value='Upload Data' />
+                </div>
+            </div>
+        </div>
+        <div class="row d-none" id="data-table-preview">
+            <div class="col-md">
+                <div class="form-group">
+                    <label>Preview </label>
+                    <iframe id="iframe-data-table-preview" style="width:100%; height:500px"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="pills-render" role="tabpanel" aria-labelledby="pills-render-tab">
+        <div class="row">
+            <div class="col-md">
+                <label>Verification result</label>
+                <div class='border p-5 mb-2' id="verificationResult">
+
+                </div>
+                <div class="form-group">
+                    <label for='filename-template'>File name template</label>
+                    <input type='text' class="form-control" id="filename-template" value='' />
+                </div>
+                <div class='border p-2 mb-2' id="field-list">
+                
+                </div>
+                
+
+                <div class='text-center'>
+                    <input type='button' onclick="generateResult()" value='Render' />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="pills-result" role="tabpanel" aria-labelledby="pills-result-tab">
+        <div class="row">
+            <div class="col-md">
+                <label>Result</label>
+                <div class='border p-5' id="renderResult">
+                    Download files:
+                    <ul>
+                        <li>Link 1</li>
+                        <li>Link 1</li>
+                    </ul>
+                    or download all: Link all
+                    <div class='text-center'>
+                        <input type='button' onclick="resetForms()" value='Start with another file' />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script src="{{request.static_url('templater:static/main.js')}}"></script>
+{% endblock content %}
