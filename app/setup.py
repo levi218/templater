@@ -18,7 +18,8 @@ requires = [
     'Jinja2',
     'python-docx',
     'secretary',
-    'apscheduler'
+    'apscheduler',
+    'xlrd'
 ]
 
 tests_require = [

@@ -10,3 +10,4 @@ pyramid-jinja2==2.8
 python-docx==0.8.10
 secretary==0.2.19
 waitress==1.4.4
+xlrd==1.2.0

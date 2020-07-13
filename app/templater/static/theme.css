@@ -30,10 +30,6 @@ p {
     font-weight: 700;
 }
 
-.starter-template {
-    margin-top: 250px;
-}
-
 html {
     font-size: 14px;
 }
@@ -41,33 +37,6 @@ html {
 @media (min-width: 768px) {
     html {
         font-size: 16px;
-    }
-}
-
-.container {
-    max-width: 960px;
-}
-
-.pricing-header {
-    max-width: 700px;
-}
-
-.card-deck .card {
-    min-width: 220px;
-}
-
-.bd-placeholder-img {
-    font-size: 1.125rem;
-    text-anchor: middle;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
-@media (min-width: 768px) {
-    .bd-placeholder-img-lg {
-        font-size: 3.5rem;
     }
 }
 
@@ -121,8 +90,51 @@ html {
     content: " or drag it here. ";
     display: block;
     margin: 0 auto;
-    color: #2ea591;
+    color: #0075FF;
     font-weight: 600;
     text-transform: capitalize;
     text-align: center;
+}
+
+.lds-facebook {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+}
+
+.lds-facebook div {
+    display: inline-block;
+    position: absolute;
+    left: 8px;
+    width: 16px;
+    background: #cef;
+    animation: lds-facebook 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+}
+
+.lds-facebook div:nth-child(1) {
+    left: 8px;
+    animation-delay: -0.24s;
+}
+
+.lds-facebook div:nth-child(2) {
+    left: 32px;
+    animation-delay: -0.12s;
+}
+
+.lds-facebook div:nth-child(3) {
+    left: 56px;
+    animation-delay: 0;
+}
+
+@keyframes lds-facebook {
+    0% {
+        top: 8px;
+        height: 64px;
+    }
+    50%,
+    100% {
+        top: 24px;
+        height: 32px;
+    }
 }

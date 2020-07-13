@@ -44,8 +44,8 @@ function uploadTemplate() {
     upload(file, function(res) {
         template_id = res.file_id;
         $('#template-next-group, #template-preview').toggleClass('d-none', false);
-
-        // TOTEST: show preview if not on localhost   
+        $('#btn-upload-template').toggleClass('btn-primary', false).toggleClass('btn-secondary', true)
+            // show preview if not on localhost   
         let url = "https://docs.google.com/gview?url=" + window.location.origin + "/files?file_id=" + template_id + "&embedded=true";
         if (window.location.hostname != "localhost") {
             $('#iframe-template-preview').attr('src', url)
@@ -62,7 +62,7 @@ function uploadData() {
         return;
     }
     let file = $('#data-table-file')[0].files[0]
-    if (['xlsx', 'csv'].indexOf(file.name.split('.').pop()) == -1) {
+    if (['xlsx', 'csv', 'xls'].indexOf(file.name.split('.').pop()) == -1) {
         alert("File extension is not supported");
         return;
     }
@@ -71,7 +71,8 @@ function uploadData() {
     upload(file, function(res) {
         data_table_id = res.file_id;
         $('#data-next-group, #data-table-preview').toggleClass('d-none', false);
-        // TOTEST: show preview if not on localhost
+        $('#btn-upload-data').toggleClass('btn-primary', false).toggleClass('btn-secondary', true)
+            // show preview if not on localhost
         let url = "https://docs.google.com/gview?url=" + window.location.origin + "/files?file_id=" + data_table_id + "&embedded=true";
         if (window.location.hostname != "localhost") {
             $('#iframe-data-table-preview').attr('src', url)
@@ -115,6 +116,9 @@ function resetForms() {
 
     $('#iframe-template-preview, #iframe-data-table-preview').attr('src', "about:blank")
     $('#progress-template, #progress-data-table').val(0);
+
+    $('#btn-upload-template, #btn-upload-data').toggleClass('btn-primary', true).toggleClass('btn-secondary', false)
+
 }
 
 function applyTestData() {
@@ -136,7 +140,8 @@ function appendJinjaTag(element) {
 
 function verifyTemplate() {
     if (!template_id || !data_table_id) return;
-    // TODO: send request to verify url with template_id and data_table_id and put result to #verificationResult
+    $('#loadingModal').modal('show')
+        // send request to verify-url with template_id and data_table_id and put result to #verificationResult
     var formData = new FormData();
 
     formData.append("template-id", template_id);
@@ -154,11 +159,15 @@ function verifyTemplate() {
                 // TODO: if field list length == 0??
 
             let div_verification = document.getElementById('verificationResult')
-            div_verification.innerHTML = ''
-            for (message of res.messages) {
-                div_verification.innerHTML += `<p>${message}</p>`
-            }
 
+            if (res.messages.length == 0) {
+                div_verification.innerHTML = `Verification done without warning`
+            } else {
+                div_verification.innerHTML = ''
+                for (message of res.messages) {
+                    div_verification.innerHTML += `<p>${message}</p>`
+                }
+            }
             document.getElementById('filename-template').value = `{{ ${res.fields[0]} }}`
 
             let div_fields = document.getElementById('field-list')
@@ -171,13 +180,15 @@ function verifyTemplate() {
         } else {
             console.log("Error " + req.status + " occurred");
         }
+        $('#loadingModal').modal('hide')
     };
     req.send(formData);
 }
 
 function generateResult() {
     if (!template_id || !data_table_id) return;
-    // TODO: send request to render url with template_id and data_table_id and put result to #renderResult
+    $('#loadingModal').modal('show')
+        // send request to render-url with template_id and data_table_id and put result to #renderResult
     var formData = new FormData();
 
     formData.append("template-id", template_id);
@@ -207,6 +218,7 @@ function generateResult() {
         } else {
             console.log("Error " + req.status + " occurred");
         }
+        $('#loadingModal').modal('hide')
     };
     req.send(formData);
 }

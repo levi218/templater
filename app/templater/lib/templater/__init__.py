@@ -1,14 +1,10 @@
 import csv
+import xlrd
 from docxtpl import DocxTemplate
 from jinja2 import Environment, Template, meta
-# import argparse
-# import sys
-# import os.path
-# from pathlib import Path
 from .custom_exceptions import TemplateTypeNotSupported, OutputNameTemplateSyntax
 from .custom_odt_renderer import CustomOdtRenderer
 import re
-# from tempfile import NamedTemporaryFile
 import io
 import zipfile
 # defining global variables
@@ -20,16 +16,16 @@ class RenderResult(object):
 
 
 class TemplateRenderer(object):
-    contexts = []
-    fieldnames = []
+
+    def __init__(self):
+        self.contexts = []
+        self.fieldnames = []
 
     # Load data from csv file
     def load_csv(self, csvfile, delimiter):
         # open csv file and prepare context array
-        # if not os.path.isfile(csv_path):
-        #     raise FileNotFoundError("File {} not found".format(csv_path))
-        # with open(csv_path, encoding="utf-8-sig") as csvfile:
-        reader = csv.DictReader(csvfile, delimiter=delimiter)
+        lines = csvfile.read().decode("utf-8-sig").splitlines()
+        reader = csv.DictReader(lines, delimiter=delimiter)
         self.fieldnames = reader.fieldnames
         for row in reader:
             context = {}
@@ -37,50 +33,49 @@ class TemplateRenderer(object):
                 context[key] = value
             self.contexts.append(context)
 
-                            
+    def load_excel(self, excelfile):
+        wb = xlrd.open_workbook(file_contents = excelfile.read()) 
+        sh = wb.sheet_by_index(0)
+        for col in range(sh.ncols):
+            self.fieldnames.append(sh.cell_value(rowx=0, colx=col))
+        for row in range(1, sh.nrows):
+            context = {}
+            for col in range(sh.ncols):
+                context[self.fieldnames[col]] = str(sh.cell_value(rowx=row, colx=col))
+            self.contexts.append(context)
+
+    def load_data(self, datafile):
+        if datafile.name.lower().endswith('.csv'):
+            self.load_csv(datafile, ',')
+        elif datafile.name.lower().endswith('.xls') or datafile.name.lower().endswith('.xlsx'):
+            self.load_excel(datafile)
+        else:
+            raise TemplateTypeNotSupported
+
     # Looking for missing variables/fields used in csv file and template and print summary
     def verify_template_odt(self, template):
-        # if not os.path.isfile(template_path):
-        #     raise FileNotFoundError("File {} not found".format(template_path))
         messages = []
         test_string = "a"
-        # print("Verifying template...")
         renderer = CustomOdtRenderer()
-        # template = open(template_path, 'rb')
         no_params = renderer.render_content_to_xml(template)
         # check if each of the fields in csv file exist in template
-        # print("Checking fields in csv")
         for field in self.fieldnames:
-            # print("\tChecking '"+field + "'...")
             w_param = renderer.render_content_to_xml(template, **{field: test_string})
             if w_param == no_params:
                 messages.append("'{}' not defined in the template".format(field))
-                # counter+=1
-            # else:
-            #     print("\t\tOK")
         # check if any field(s) used in the template is not defined in the csv
-        # print("Checking variables in template")
         parse_content = Environment().parse(renderer.content_original)
         undeclared_template_variables = meta.find_undeclared_variables(parse_content)
         for variable in undeclared_template_variables:
-            # print("\tChecking '"+variable + "'...")
             if variable not in self.fieldnames:
                 messages.append("'{}' not defined in the csv".format(variable))
-                # counter+=1
-            # else:
-            #     print("\t\tOK")
-        # return counter
         return messages
 
     # render the output files
-    # def render_output_odt(template_path, output_name_template,output_dir):
     def render_output_odt(self, template, output_name_template):
-        # if not os.path.isfile(template_path):
-        #     raise FileNotFoundError("File {} not found".format(template_path))
         r_result = RenderResult()
         for cont in self.contexts:
             renderer = CustomOdtRenderer()
-            # output = open((output_dir if output_dir is not None else '.' )+'/'+, 'wb');
             output = io.BytesIO()
             doc = renderer.render(template, **cont)
             output.write(doc)
@@ -89,45 +84,27 @@ class TemplateRenderer(object):
 
 
     # Looking for missing variables/fields used in csv file and template and print summary
-    # def verify_template_docx(template_path):
     def verify_template_docx(self, template):
-        # if not os.path.isfile(template_path):
-        #     raise FileNotFoundError("File {} not found".format(template_path))
-        # counter = 0
         messages = []
         test_string = "a"
-        # print("Verifying template...")
         doc = DocxTemplate(template)
         doc.render({})
         no_params = doc.get_xml()
         # check if each of the fields in csv file exist in template
-        # print("Checking fields in csv")
         for field in self.fieldnames:
             doc = DocxTemplate(template)
-            # print("\tChecking '"+field + "'...")
             doc.render({field: test_string})
             if doc.get_xml() == no_params:
                 messages.append("'{}' not defined in the template".format(field))
-                # counter+=1
-            # else:
-            #     print("\t\tOK")
         # check if any field(s) used in the template is not defined in the csv
-        # print("Checking variables in template")
         doc = DocxTemplate(template)
         for variable in doc.get_undeclared_template_variables():
-            # print("\tChecking '"+variable + "'...")
             if variable not in self.fieldnames:
                 messages.append("'{}' not defined in the csv".format(variable))
-                # counter+=1
-            # else:
-            #     print("\t\tOK")
         return messages
 
     # render the output files
-    # def render_output_docx(template_path, output_name_template,output_dir):
     def render_output_docx(self, template, output_name_template):
-        # if not os.path.isfile(template_path):
-        #     raise FileNotFoundError("File {} not found".format(template_path))
         r_result = RenderResult()
         for cont in self.contexts:
             output = io.BytesIO()
@@ -156,21 +133,11 @@ class TemplateRenderer(object):
         
         result.archive = archive
 
-    # def process(template_path, output_name_template, output_dir):
     def render(self, template, output_name_template):
-
-        # if output_dir is not None:
-        #     print('Creating output folder...')
-        #     path = Path(output_dir)
-        #     path.mkdir(parents=True, exist_ok=True)
-        #     print("\tOK")
         result = RenderResult()
         if template.name.lower().endswith('.docx'):
-            # print('Rendering files...')
             result = self.render_output_docx(template, (output_name_template if output_name_template is not None else '{{ ' + self.fieldnames[0] + ' }}'))
-            # print("\tOK")
         elif template.name.lower().endswith('.odt'):
-            # print('Rendering files...')
             result = self.render_output_odt(template, (output_name_template if output_name_template is not None else '{{ ' + self.fieldnames[0] + ' }}'))
         else:
             raise TemplateTypeNotSupported
