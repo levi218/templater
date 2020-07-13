@@ -28,50 +28,56 @@ def get_doc(request):
 
 @view_config(route_name='verify', request_method='POST', renderer='json')
 def verify_doc(request):
-    template_id = request.POST['template-id']
-    data_id = request.POST['data-table-id']
-    
-    template = request.fs.get(ObjectId(template_id))
-    data = request.fs.get(ObjectId(data_id))
+    try:
+        template_id = request.POST['template-id']
+        data_id = request.POST['data-table-id']
+        
+        template = request.fs.get(ObjectId(template_id))
+        data = request.fs.get(ObjectId(data_id))
 
-    renderer = TemplateRenderer()
+        renderer = TemplateRenderer()
 
-    renderer.load_data(data)
-    result = renderer.verify(template)
+        renderer.load_data(data)
+        result = renderer.verify(template)
 
-    return {'status': 'OK', 'messages': result, 'fields': renderer.fieldnames}
+        return {'status': 'OK', 'messages': result, 'fields': renderer.fieldnames}
+    except:
+        return {'status': 'err'}
 
 @view_config(route_name='render', request_method='POST', renderer='json')
 def render_doc(request):
-    template_id = request.POST['template-id']
-    data_id = request.POST['data-table-id']
-    name_pattern = request.POST['name-pattern'] if 'name-pattern' in request.POST else None
-    
-    template = request.fs.get(ObjectId(template_id))
-    data = request.fs.get(ObjectId(data_id))
+    try:
+        template_id = request.POST['template-id']
+        data_id = request.POST['data-table-id']
+        name_pattern = request.POST['name-pattern'] if 'name-pattern' in request.POST else None
+        
+        template = request.fs.get(ObjectId(template_id))
+        data = request.fs.get(ObjectId(data_id))
 
-    renderer = TemplateRenderer()
+        renderer = TemplateRenderer()
 
-    renderer.load_data(data)
-    result = renderer.render(template, name_pattern)
+        renderer.load_data(data)
+        result = renderer.render(template, name_pattern)
 
-    files_id = {}
-    for filename in result.files:
-        # tmp = NamedTemporaryFile()
-        try:
-            tmp = request.fs.new_file(filename = filename)
-            tmp.write(result.files[filename].getvalue())
-        finally:
-            tmp.close()
-            files_id[filename] = str(tmp._id)
-    
-    archive_id = None
-    if(result.archive is not None):
-        try:
-            tmp = request.fs.new_file(filename = "archive.zip")
-            tmp.write(result.archive.getvalue())
-        finally:
-            tmp.close()
-            archive_id = str(tmp._id)
+        files_id = {}
+        for filename in result.files:
+            # tmp = NamedTemporaryFile()
+            try:
+                tmp = request.fs.new_file(filename = filename)
+                tmp.write(result.files[filename].getvalue())
+            finally:
+                tmp.close()
+                files_id[filename] = str(tmp._id)
+        
+        archive_id = None
+        if(result.archive is not None):
+            try:
+                tmp = request.fs.new_file(filename = "archive.zip")
+                tmp.write(result.archive.getvalue())
+            finally:
+                tmp.close()
+                archive_id = str(tmp._id)
 
-    return {'status': 'OK', 'files': files_id, 'archive': str(archive_id) if archive_id is not None else ''}
+        return {'status': 'OK', 'files': files_id, 'archive': str(archive_id) if archive_id is not None else ''}
+    except:
+        return {'status': 'err'}

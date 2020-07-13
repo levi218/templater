@@ -156,27 +156,31 @@ function verifyTemplate() {
     req.onload = function(event) {
         if (req.status == 200) {
             var res = JSON.parse(req.response)
-                // TODO: if field list length == 0??
 
-            let div_verification = document.getElementById('verificationResult')
-
-            if (res.messages.length == 0) {
-                div_verification.innerHTML = `Verification done without warning`
+            if (res.status == 'err') {
+                alert('Something wrong occurred')
             } else {
-                div_verification.innerHTML = ''
-                for (message of res.messages) {
-                    div_verification.innerHTML += `<p>${message}</p>`
+
+                let div_verification = document.getElementById('verificationResult')
+
+                if (res.messages.length == 0) {
+                    div_verification.innerHTML = `Verification done without warning`
+                } else {
+                    div_verification.innerHTML = ''
+                    for (message of res.messages) {
+                        div_verification.innerHTML += `<p>${message}</p>`
+                    }
                 }
-            }
-            document.getElementById('filename-template').value = `{{ ${res.fields[0]} }}`
+                document.getElementById('filename-template').value = `{{ ${res.fields[0]} }}`
 
-            let div_fields = document.getElementById('field-list')
-            div_fields.innerHTML = ''
-            for (field of res.fields) {
-                div_fields.innerHTML += `<input type='button' onclick='appendJinjaTag(this)' value='${field}'/>`
-            }
+                let div_fields = document.getElementById('field-list')
+                div_fields.innerHTML = ''
+                for (field of res.fields) {
+                    div_fields.innerHTML += `<input type='button' onclick='appendJinjaTag(this)' value='${field}'/>`
+                }
 
-            activeTabRender()
+                activeTabRender()
+            }
         } else {
             console.log("Error " + req.status + " occurred");
         }
@@ -204,17 +208,21 @@ function generateResult() {
     req.onload = function(event) {
         if (req.status == 200) {
             var res = JSON.parse(req.response)
-                // TODO: if field list length == 0??
 
-            let div_result = document.getElementById('renderResult')
-            div_result.innerHTML = 'Generated files:<br /><ul>'
-            Object.keys(res.files).forEach(function(filename) {
-                div_result.innerHTML += `<li><a href='/files?file_id=${res.files[filename]}'>${filename}</a></li>`
-            });
-            div_result.innerHTML += '</ul><br />Download all as archive: '
-            div_result.innerHTML += `<a href='/files?file_id=${res.archive}'>Link</a></li>`
+            if (res.status == 'err') {
+                alert('Something wrong occurred')
+            } else {
 
-            activeTabResult()
+                let div_result = document.getElementById('renderResult')
+                div_result.innerHTML = 'Generated files:<br /><ul>'
+                Object.keys(res.files).forEach(function(filename) {
+                    div_result.innerHTML += `<li><a href='/files?file_id=${res.files[filename]}'>${filename}</a></li>`
+                });
+                div_result.innerHTML += '</ul><br />Download all as archive: '
+                div_result.innerHTML += `<a href='/files?file_id=${res.archive}'>Link</a></li>`
+
+                activeTabResult()
+            }
         } else {
             console.log("Error " + req.status + " occurred");
         }
