@@ -1,9 +1,9 @@
 {% extends "layout.jinja2" %}
 
 {% block content %}
-<div class="px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+<div class="px-3 py-5 pt-md-5 pb-md-4 mx-auto my-5 text-center">
     <h1 class="display-4">Templater</h1>
-    <p class="lead">Quickly generate docx/odt documents from template using data from csv.</p>
+    <p class="lead">Quickly generate documents from docx/odt template using data from csv/xls/xlsx file.</p>
 </div>
 
 <ul class="nav nav-pills mb-3 justify-content-center" id="pills-tab" role="tablist">
@@ -19,7 +19,7 @@
     </li>
     <li class="nav-item">
         <a class="nav-link disabled" id="pills-datatable-tab" data-toggle="pill" href="#pills-datatable" role="tab" aria-controls="pills-datatable" aria-selected="false">
-        Upload Data Table
+        Upload Data Table 
         </a>
     </li>
     <li class="nav-item">
@@ -54,10 +54,10 @@
                 </div>
                 <div class='text-center'>
                     <span id="template-next-group" class="d-none">
-                        <input type='button' onclick="activeTabDataTable()" value='Use this template' />
+                        <input type='button' class='btn btn-primary' onclick="activeTabDataTable()" value='Use this template' />
                         or
                     </span>
-                    <input type='button' onclick="uploadTemplate()" value='Upload Template' />
+                    <input type='button' id='btn-upload-template' class='btn btn-primary' onclick="uploadTemplate()" value='Upload Template' />
                 </div>
             </div>
         </div>
@@ -81,10 +81,10 @@
                 </div>
                 <div class='text-center'>
                     <span id="data-next-group" class="d-none">
-                        <input type='button' onclick="verifyTemplate()" value='Use this data table' />
+                        <input type='button' class='btn btn-primary' onclick="verifyTemplate()" value='Use this data table' />
                         or
                     </span>
-                    <input type='button' onclick="uploadData()" value='Upload Data' />
+                    <input type='button' id='btn-upload-data' class='btn btn-primary' onclick="uploadData()" value='Upload Data' />
                 </div>
             </div>
         </div>
@@ -92,7 +92,7 @@
             <div class="col-md">
                 <div class="form-group">
                     <label>Preview </label>
-                    <iframe id="iframe-data-table-preview" style="width:100%; height:500px"></iframe>
+                    <div id='div-data-table-preview'></div>
                 </div>
             </div>
         </div>
@@ -101,20 +101,20 @@
         <div class="row">
             <div class="col-md">
                 <label>Verification result</label>
-                <div class='border p-5 mb-2' id="verificationResult">
+                <div class='border px-4 py-3 mb-3' id="verificationResult">
 
                 </div>
                 <div class="form-group">
                     <label for='filename-template'>File name template</label>
                     <input type='text' class="form-control" id="filename-template" value='' />
                 </div>
-                <div class='border p-2 mb-2' id="field-list">
-                
+                <div class='border p-3 mb-3' id="field-list">
+
                 </div>
-                
+
 
                 <div class='text-center'>
-                    <input type='button' onclick="generateResult()" value='Render' />
+                    <input type='button' class='btn btn-primary' onclick="generateResult()" value='Render' />
                 </div>
             </div>
         </div>
@@ -123,16 +123,16 @@
         <div class="row">
             <div class="col-md">
                 <label>Result</label>
-                <div class='border p-5' id="renderResult">
+                <div class='border px-5 py-3 mb-3' id="renderResult">
                     Download files:
                     <ul>
                         <li>Link 1</li>
                         <li>Link 1</li>
                     </ul>
                     or download all: Link all
-                    <div class='text-center'>
-                        <input type='button' onclick="resetForms()" value='Start with another file' />
-                    </div>
+                </div>
+                <div class='text-center'>
+                    <input type='button' class='btn btn-primary' onclick="resetForms()" value='Start with another file' />
                 </div>
             </div>
         </div>
@@ -140,6 +140,20 @@
 </div>
 
 
+<!-- Modal -->
+<div class="modal fade" id="loadingModal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="lds-facebook">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="{{request.static_url('templater:static/main.js')}}"></script>
 {% endblock content %}
