@@ -20,6 +20,7 @@ class TemplateRenderer(object):
     def __init__(self):
         self.contexts = []
         self.fieldnames = []
+        self.raw_table = []
 
     # Load data from csv file
     def load_csv(self, csvfile, delimiter):
@@ -27,22 +28,31 @@ class TemplateRenderer(object):
         lines = csvfile.read().decode("utf-8-sig").splitlines()
         reader = csv.DictReader(lines, delimiter=delimiter)
         self.fieldnames = reader.fieldnames
+        self.raw_table.append(self.fieldnames)
         for row in reader:
             context = {}
+            r = []
             for key, value in row.items():
                 context[key] = value
+                r.append(value)
             self.contexts.append(context)
+            self.raw_table.append(r)
 
     def load_excel(self, excelfile):
         wb = xlrd.open_workbook(file_contents = excelfile.read()) 
         sh = wb.sheet_by_index(0)
         for col in range(sh.ncols):
             self.fieldnames.append(sh.cell_value(rowx=0, colx=col))
+        self.raw_table.append(self.fieldnames)
         for row in range(1, sh.nrows):
             context = {}
+            r = []
             for col in range(sh.ncols):
-                context[self.fieldnames[col]] = str(sh.cell_value(rowx=row, colx=col))
+                value = str(sh.cell_value(rowx=row, colx=col))
+                context[self.fieldnames[col]] = value
+                r.append(value)
             self.contexts.append(context)
+            self.raw_table.append(r)
 
     def load_data(self, datafile):
         if datafile.name.lower().endswith('.csv'):

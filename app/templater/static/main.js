@@ -1,12 +1,14 @@
 let template_id;
 let data_table_id;
 
-function upload(file, callback, processBar) {
+function upload(file, callback, processBar, tablePreview = false) {
     // let url = window.location.origin + "/upload"
     var formData = new FormData();
 
     formData.append("file", file);
-
+    if (tablePreview) {
+        formData.append('table-preview', true)
+    }
     var req = new XMLHttpRequest();
     req.upload.addEventListener("progress", function(event) {
         var percent = (event.loaded / event.total) * 100;
@@ -70,16 +72,31 @@ function uploadData() {
     $('#progress-data-table').val(0)
     upload(file, function(res) {
         data_table_id = res.file_id;
+
+        // show data table from vals returned from server
+        let table = `<table class='table table-bordered'>`
+        res.data.reduce(function(accumulator, current, index) {
+            table += '<tr>'
+            if (index == 0) {
+                for (val of current) {
+                    table += `<th>${val}</th>`
+                }
+            } else {
+                for (val of current) {
+                    table += `<td>${val}</td>`
+                }
+            }
+            table += '</tr>'
+        }, table)
+        table += '</table>'
+
+        $('#div-data-table-preview').html(table)
+
+
         $('#data-next-group, #data-table-preview').toggleClass('d-none', false);
         $('#btn-upload-data').toggleClass('btn-primary', false).toggleClass('btn-secondary', true)
-            // show preview if not on localhost
-        let url = "https://docs.google.com/gview?url=" + window.location.origin + "/files?file_id=" + data_table_id + "&embedded=true";
-        if (window.location.hostname != "localhost") {
-            $('#iframe-data-table-preview').attr('src', url)
-        } else {
-            console.log(url)
-        }
-    }, $('#progress-data-table'))
+
+    }, $('#progress-data-table'), true)
 }
 
 function activeTabDataTable() {

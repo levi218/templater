@@ -13,6 +13,11 @@ def home_page(request):
 @view_config(route_name='upload', request_method='POST', renderer='json')
 def upload_doc(request):
     file_id = request.fs.put(request.POST['file'].file, filename = request.POST['file'].filename)
+    if 'table-preview' in request.POST:
+        datafile = request.fs.get(ObjectId(file_id))
+        renderer = TemplateRenderer()
+        renderer.load_data(datafile)
+        return {'status': 'OK', 'file_id':str(file_id), 'data': renderer.raw_table}    
     return {'status': 'OK', 'file_id':str(file_id)}
 
 @view_config(route_name='files', request_method='GET')
