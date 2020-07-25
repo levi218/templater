@@ -48,7 +48,7 @@ function uploadTemplate() {
 
         // save in local storage
         localStorage.setItem('template_file', JSON.stringify({ id: template_id, expire_at: res.expire_at }))
-
+        $('#pills-render-tab, #pills-result-tab').toggleClass('disabled', true);
         showTemplatePreview()
     }, $('#progress-template'))
 }
@@ -83,6 +83,7 @@ function uploadData() {
 
         // save in local storage
         localStorage.setItem('data_file', JSON.stringify({ id: data_table_id, expire_at: res.expire_at }))
+        $('#pills-render-tab, #pills-result-tab').toggleClass('disabled', true);
 
         // show data table from vals returned from server
         let table = `<table class='table table-bordered'>`
