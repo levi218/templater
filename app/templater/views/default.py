@@ -4,6 +4,7 @@ from bson import ObjectId
 from templater.lib.templater import RenderResult, TemplateRenderer
 from tempfile import NamedTemporaryFile
 import time 
+import urllib
 import datetime
 @view_config(route_name='home', renderer='../templates/homepage.jinja2')
 def home_page(request):
@@ -13,12 +14,14 @@ def home_page(request):
 @view_config(route_name='upload', request_method='POST', renderer='json')
 def upload_doc(request):
     file_id = request.fs.put(request.POST['file'].file, filename = request.POST['file'].filename)
+    max_age = request.registry.settings['templater']['file_max_age'] if request.registry.settings['templater']['file_max_age'] else 60
+    delta = datetime.timedelta(minutes=int(max_age))
     if 'table-preview' in request.POST:
         datafile = request.fs.get(ObjectId(file_id))
         renderer = TemplateRenderer()
         renderer.load_data(datafile)
-        return {'status': 'OK', 'file_id':str(file_id), 'data': renderer.raw_table}    
-    return {'status': 'OK', 'file_id':str(file_id)}
+        return {'status': 'OK', 'file_id':str(file_id), 'data': renderer.raw_table, 'expire_at': (datetime.datetime.utcnow() + delta).isoformat()}    
+    return {'status': 'OK', 'file_id':str(file_id), 'expire_at': (datetime.datetime.utcnow() + delta).isoformat()}
 
 @view_config(route_name='files', request_method='GET')
 def get_doc(request):
@@ -27,13 +30,13 @@ def get_doc(request):
 
     response = request.response
     response.app_iter = FileIter(file)
-    response.content_disposition = 'attachment; filename="%s"' % file.name
+    response.content_disposition = "attachment; filename*=UTF-8''%s" % urllib.parse.quote(file.name.encode('utf8'))
 
     return response
 
 @view_config(route_name='verify', request_method='POST', renderer='json')
 def verify_doc(request):
-    try:
+    # try:
         template_id = request.POST['template-id']
         data_id = request.POST['data-table-id']
         
@@ -46,12 +49,12 @@ def verify_doc(request):
         result = renderer.verify(template)
 
         return {'status': 'OK', 'messages': result, 'fields': renderer.fieldnames}
-    except:
-        return {'status': 'err'}
+    # except:
+    #     return {'status': 'err'}
 
 @view_config(route_name='render', request_method='POST', renderer='json')
 def render_doc(request):
-    try:
+    # try:
         template_id = request.POST['template-id']
         data_id = request.POST['data-table-id']
         name_pattern = request.POST['name-pattern'] if 'name-pattern' in request.POST else None
@@ -84,5 +87,5 @@ def render_doc(request):
                 archive_id = str(tmp._id)
 
         return {'status': 'OK', 'files': files_id, 'archive': str(archive_id) if archive_id is not None else ''}
-    except:
-        return {'status': 'err'}
+    # except:
+    #     return {'status': 'err'}

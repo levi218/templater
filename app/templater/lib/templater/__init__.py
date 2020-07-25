@@ -4,6 +4,9 @@ from docxtpl import DocxTemplate
 from jinja2 import Environment, Template, meta
 from .custom_exceptions import TemplateTypeNotSupported, OutputNameTemplateSyntax
 from .custom_odt_renderer import CustomOdtRenderer
+from .openoffice_renderer import OpenOfficeRenderer
+from .pptx_renderer import PptxRenderer
+from .xlsx_renderer import XlsxRenderer
 import re
 import io
 import zipfile
@@ -63,10 +66,9 @@ class TemplateRenderer(object):
             raise TemplateTypeNotSupported
 
     # Looking for missing variables/fields used in csv file and template and print summary
-    def verify_template_odt(self, template):
+    def verify_template_odt(self, template, renderer = CustomOdtRenderer()):
         messages = []
         test_string = "a"
-        renderer = CustomOdtRenderer()
         no_params = renderer.render_content_to_xml(template)
         # check if each of the fields in csv file exist in template
         for field in self.fieldnames:
@@ -82,14 +84,14 @@ class TemplateRenderer(object):
         return messages
 
     # render the output files
-    def render_output_odt(self, template, output_name_template):
+    def render_output_odt(self, template, output_name_template, renderer = CustomOdtRenderer(), extension = '.odt'):
         r_result = RenderResult()
         for cont in self.contexts:
-            renderer = CustomOdtRenderer()
+            # renderer = CustomOdtRenderer()
             output = io.BytesIO()
             doc = renderer.render(template, **cont)
             output.write(doc)
-            r_result.files[re.sub(r'[\\/:*?\"<>|]','',Template(output_name_template).render(cont)) + ".odt"] = output
+            r_result.files[re.sub(r'[\\/:*?\"<>|]','',Template(output_name_template).render(cont)) + extension] = output
         return r_result
 
 
@@ -130,6 +132,12 @@ class TemplateRenderer(object):
             return self.verify_template_docx(template)
         elif template.name.lower().endswith('.odt'):
             return self.verify_template_odt(template)
+        elif template.name.lower().endswith('.odp') or template.name.lower().endswith('.ods'):
+            return self.verify_template_odt(template,OpenOfficeRenderer())
+        elif template.name.lower().endswith('.pptx'):
+            return self.verify_template_odt(template,PptxRenderer())
+        elif template.name.lower().endswith('.xlsx'):
+            return self.verify_template_odt(template,XlsxRenderer())
         else:
             raise TemplateTypeNotSupported
 
@@ -145,10 +153,19 @@ class TemplateRenderer(object):
 
     def render(self, template, output_name_template):
         result = RenderResult()
+        outname = (output_name_template if output_name_template is not None else '{{ ' + self.fieldnames[0] + ' }}')
         if template.name.lower().endswith('.docx'):
-            result = self.render_output_docx(template, (output_name_template if output_name_template is not None else '{{ ' + self.fieldnames[0] + ' }}'))
+            result = self.render_output_docx(template, outname)
         elif template.name.lower().endswith('.odt'):
-            result = self.render_output_odt(template, (output_name_template if output_name_template is not None else '{{ ' + self.fieldnames[0] + ' }}'))
+            result = self.render_output_odt(template, outname)
+        elif template.name.lower().endswith('.odp'):
+            result = self.render_output_odt(template, outname, OpenOfficeRenderer(), '.odp')
+        elif template.name.lower().endswith('.ods'):
+            result = self.render_output_odt(template, outname, OpenOfficeRenderer(), '.ods')
+        elif template.name.lower().endswith('.pptx'):
+            result = self.render_output_odt(template, outname, PptxRenderer(), '.pptx')
+        elif template.name.lower().endswith('.xlsx'):
+            result = self.render_output_odt(template, outname, XlsxRenderer(), '.xlsx')
         else:
             raise TemplateTypeNotSupported
         self.createArchive(result)
