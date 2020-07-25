@@ -11,7 +11,7 @@ import datetime
 
 def background_tasks():
     print("background task running...")
-    if os.environ['DB_PORT_27017_TCP_ADDR']:
+    if 'DB_PORT_27017_TCP_ADDR' in os.environ:
         db = MongoClient(
             os.environ['DB_PORT_27017_TCP_ADDR'],
             27017)['templater']
