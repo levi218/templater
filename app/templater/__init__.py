@@ -20,7 +20,7 @@ def main(global_config, **settings):
     c.read('config.ini')
     for s in c.sections():
         config.registry.settings[s] = dict(c.items(s))
-    if os.environ['DB_PORT_27017_TCP_ADDR']:
+    if 'DB_PORT_27017_TCP_ADDR' in os.environ:
         config.registry.db = MongoClient(
             os.environ['DB_PORT_27017_TCP_ADDR'],
             27017)
