@@ -11,6 +11,7 @@ import datetime
 
 def background_tasks():
     print("background task running...")
+    print(config.get('templater','mongo_uri', fallback=None))
     if 'DB_PORT_27017_TCP_ADDR' in os.environ:
         db = MongoClient(
             os.environ['DB_PORT_27017_TCP_ADDR'],
@@ -20,6 +21,7 @@ def background_tasks():
         if mongo_uri is None:
             raise Exception("Database not found")
         else:
+            print(mongo_uri)
             db = MongoClient(mongo_uri)['templater']
     fs = GridFS(db)
 
