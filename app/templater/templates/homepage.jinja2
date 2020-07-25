@@ -49,7 +49,7 @@
             <div class="col-md">
                 <div class="form-group files">
                     <label>Upload Your Template </label>
-                    <input type="file" id="template-file" class="form-control" multiple="" accept=".docx, .odt"/>
+                    <input type="file" id="template-file" class="form-control" multiple="" accept=".docx, .odt, .ods, .odp, .pptx, .xlsx"/>
                     <progress id="progress-template" value="0" max="100" style="width:100%;"></progress>
                 </div>
                 <div class='text-center'>
@@ -123,7 +123,7 @@
         <div class="row">
             <div class="col-md">
                 <label>Result</label>
-                <div class='border px-5 py-3 mb-3' id="renderResult">
+                <div class='border px-5 py-3 mb-3' id="render-result">
                     Download files:
                     <ul>
                         <li>Link 1</li>
@@ -155,5 +155,6 @@
     </div>
 </div>
 
+<script src="{{request.static_url('templater:static/session.js')}}"></script>
 <script src="{{request.static_url('templater:static/main.js')}}"></script>
 {% endblock content %}

@@ -2,7 +2,7 @@ from secretary import Renderer
 import re
 from xml.dom.minidom import parseString
 
-class CustomOdtRenderer(Renderer):
+class OpenOfficeRenderer(Renderer):
     """ Custom renderer inherited from Secretary's Renderer """
     def patch_xml(self, src_xml):
         """ Strip all unnecessary xml tags to have a raw xml understandable by jinja2 """
@@ -11,11 +11,38 @@ class CustomOdtRenderer(Renderer):
         # same thing with {% ... %}
         # "jinja2 stuff" could a variable, a 'if' etc... anything jinja2 will understand
         def striptags(m):
-            return re.sub('(<text:s/>)|(</text:[^>]*>.*?<text:[^>]*>)', '',
+            return re.sub('(<text:s[^>]*/>)|(</text:[^>]*>.*?<text:[^>]*>)', '',
                             m.group(0), flags=re.DOTALL)
         src_xml = re.sub(r'{%(?:(?!%}).)*|{{(?:(?!}}).)*', striptags,
                             src_xml, flags=re.DOTALL)
         return src_xml
+
+
+    def _render_xml_body(self, xml_document, **kwargs):
+        try:
+            # self.template_images = dict()
+            # self._prepare_document_tags(xml_document)
+            xml_source = xml_document.toxml()
+            xml_source = xml_source.encode('ascii', 'xmlcharrefreplace')
+            jinja_template = self.environment.from_string(
+                self._unescape_entities(xml_source.decode('utf-8'))
+            )
+
+            result = jinja_template.render(**kwargs)
+
+            final_xml = parseString(result.encode('ascii', 'xmlcharrefreplace'))
+            # if self.template_images:
+            #     self.replace_images(final_xml)
+
+            return final_xml
+        except:
+            self.log.error('Error rendering template:\n%s',
+                           xml_document.toprettyxml(), exc_info=True)
+            print(xml_document.toprettyxml())
+            # self.log.error('Unescaped template was:\n{0}'.format(template_string))
+            raise
+        finally:
+            self.log.debug('Rendering xml object finished')
 
 
     def render_content_to_xml(self, template, **kwargs):
@@ -29,7 +56,7 @@ class CustomOdtRenderer(Renderer):
         self.content = parseString(self.patch_xml(self.files['content.xml'].decode("utf-8")))
         self.content_original = self.content.toxml()
         # Render content.xml keeping just 'office:body' node.
-        rendered_content = self._render_xml(self.content, **kwargs)
+        rendered_content = self._render_xml_body(self.content, **kwargs)
         self.content.getElementsByTagName('office:document-content')[0].replaceChild(
             rendered_content.getElementsByTagName('office:body')[0],
             self.content.getElementsByTagName('office:body')[0]
@@ -52,7 +79,7 @@ class CustomOdtRenderer(Renderer):
         self.manifest = parseString(self.files['META-INF/manifest.xml'])
 
         # Render content.xml keeping just 'office:body' node.
-        rendered_content = self._render_xml(self.content, **kwargs)
+        rendered_content = self._render_xml_body(self.content, **kwargs)
         self.content.getElementsByTagName('office:document-content')[0].replaceChild(
             rendered_content.getElementsByTagName('office:body')[0],
             self.content.getElementsByTagName('office:body')[0]

@@ -37,7 +37,7 @@ function uploadTemplate() {
         return;
     }
     let file = $('#template-file')[0].files[0];
-    if (['docx', 'odt'].indexOf(file.name.split('.').pop()) == -1) {
+    if (['docx', 'odt', 'ods', 'odp', 'pptx', 'xlsx'].indexOf(file.name.split('.').pop()) == -1) {
         console.log(file.name.split('.').pop())
         alert("File extension is not supported");
         return;
@@ -45,16 +45,24 @@ function uploadTemplate() {
     $('#progress-template').val(0)
     upload(file, function(res) {
         template_id = res.file_id;
-        $('#template-next-group, #template-preview').toggleClass('d-none', false);
-        $('#btn-upload-template').toggleClass('btn-primary', false).toggleClass('btn-secondary', true)
-            // show preview if not on localhost   
-        let url = "https://docs.google.com/gview?url=" + window.location.origin + "/files?file_id=" + template_id + "&embedded=true";
-        if (window.location.hostname != "localhost") {
-            $('#iframe-template-preview').attr('src', url)
-        } else {
-            console.log(url)
-        }
+
+        // save in local storage
+        localStorage.setItem('template_file', JSON.stringify({ id: template_id, expire_at: res.expire_at }))
+
+        showTemplatePreview()
     }, $('#progress-template'))
+}
+
+function showTemplatePreview() {
+    $('#template-next-group, #template-preview').toggleClass('d-none', false);
+    $('#btn-upload-template').toggleClass('btn-primary', false).toggleClass('btn-secondary', true)
+        // show preview if not on localhost   
+    let url = "https://docs.google.com/gview?url=" + window.location.origin + "/files?file_id=" + template_id + "&embedded=true";
+    if (window.location.hostname != "localhost") {
+        $('#iframe-template-preview').attr('src', url)
+    } else {
+        console.log(url)
+    }
 }
 
 function uploadData() {
@@ -73,6 +81,9 @@ function uploadData() {
     upload(file, function(res) {
         data_table_id = res.file_id;
 
+        // save in local storage
+        localStorage.setItem('data_file', JSON.stringify({ id: data_table_id, expire_at: res.expire_at }))
+
         // show data table from vals returned from server
         let table = `<table class='table table-bordered'>`
         res.data.reduce(function(accumulator, current, index) {
@@ -90,43 +101,54 @@ function uploadData() {
         }, table)
         table += '</table>'
 
-        $('#div-data-table-preview').html(table)
+        localStorage.setItem('table_preview', table)
 
-
-        $('#data-next-group, #data-table-preview').toggleClass('d-none', false);
-        $('#btn-upload-data').toggleClass('btn-primary', false).toggleClass('btn-secondary', true)
-
+        showDataPreview()
     }, $('#progress-data-table'), true)
 }
 
-function activeTabDataTable() {
+function showDataPreview() {
+    $('#div-data-table-preview').html(localStorage.getItem('table_preview'))
+
+    $('#data-next-group, #data-table-preview').toggleClass('d-none', false);
+    $('#btn-upload-data').toggleClass('btn-primary', false).toggleClass('btn-secondary', true)
+}
+
+function activeTabDataTable(updateStorage = true) {
     if (template_id) {
         var pills_tab = $('#pills-datatable-tab');
         pills_tab.toggleClass('disabled', false);
-        pills_tab.tab('show');
+        if (updateStorage) {
+            pills_tab.tab('show');
+            localStorage.setItem('currentActivatedTab', 'pills-datatable-tab');
+        }
     }
 }
 
-function activeTabRender() {
+function activeTabRender(updateStorage = true) {
     if (data_table_id) {
         var pills_tab = $('#pills-render-tab');
         pills_tab.toggleClass('disabled', false);
-        pills_tab.tab('show');
+        if (updateStorage) {
+            pills_tab.tab('show');
+            localStorage.setItem('currentActivatedTab', 'pills-render-tab');
+        }
     }
 }
 
-function activeTabResult() {
+function activeTabResult(updateStorage = true) {
     var pills_tab = $('#pills-result-tab');
     pills_tab.toggleClass('disabled', false);
-    pills_tab.tab('show');
+    if (updateStorage) {
+        pills_tab.tab('show');
+        localStorage.setItem('currentActivatedTab', 'pills-result-tab');
+    }
 }
-
-
 
 function resetForms() {
     template_id = null;
     data_table_id = null;
-
+    clearSessionLocalStorage()
     $('#pills-template-tab').tab('show');
     $('#pills-datatable-tab, #pills-render-tab, #pills-result-tab').toggleClass('disabled', true);
     $('#template-next-group, #data-next-group, #template-preview, #data-table-preview').toggleClass('d-none', true);
@@ -138,25 +160,15 @@ function resetForms() {
 
 }
 
-function applyTestData() {
-    template_id = '5f09e79681a8d0768cf72fb6'
-    data_table_id = '5f09bcf9ddd3a4cdb98cb1a2'
-    var pills_tab = $('#pills-datatable-tab');
-    pills_tab.toggleClass('disabled', false);
-    var pills_tab = $('#pills-render-tab');
-    pills_tab.toggleClass('disabled', false);
-    var pills_tab = $('#pills-result-tab');
-    pills_tab.toggleClass('disabled', false);
-    $('#template-next-group, #template-preview').toggleClass('d-none', false);
-    $('#data-next-group, #data-table-preview').toggleClass('d-none', false);
-}
-
 function appendJinjaTag(element) {
-    document.getElementById('filename-template').value += `{{ ${element.value} }}`
+    let input = document.getElementById('filename-template')
+    input.value += `{{ ${element.value} }}`
+    input.onchange();
 }
 
 function verifyTemplate() {
     if (!template_id || !data_table_id) return;
+    console.log('1')
     $('#loadingModal').modal('show')
         // send request to verify-url with template_id and data_table_id and put result to #verificationResult
     var formData = new FormData();
@@ -188,7 +200,9 @@ function verifyTemplate() {
                         div_verification.innerHTML += `<p>${message}</p>`
                     }
                 }
-                document.getElementById('filename-template').value = `{{ ${res.fields[0]} }}`
+
+                let input_name_template = document.getElementById('filename-template')
+                input_name_template.value = `{{ ${res.fields[0]} }}`
 
                 let div_fields = document.getElementById('field-list')
                 div_fields.innerHTML = ''
@@ -196,12 +210,15 @@ function verifyTemplate() {
                     div_fields.innerHTML += `<input type='button' onclick='appendJinjaTag(this)' value='${field}'/>`
                 }
 
+                localStorage.setItem('verification_result', div_verification.innerHTML)
+                localStorage.setItem('naming_template', input_name_template.value)
+                localStorage.setItem('naming_fields', div_fields.innerHTML)
                 activeTabRender()
             }
         } else {
             console.log("Error " + req.status + " occurred");
         }
-        $('#loadingModal').modal('hide')
+        setTimeout(function() { $('#loadingModal').modal('hide') }, 500);
     };
     req.send(formData);
 }
@@ -209,7 +226,7 @@ function verifyTemplate() {
 function generateResult() {
     if (!template_id || !data_table_id) return;
     $('#loadingModal').modal('show')
-        // send request to render-url with template_id and data_table_id and put result to #renderResult
+        // send request to render-url with template_id and data_table_id and put result to #render-result
     var formData = new FormData();
 
     formData.append("template-id", template_id);
@@ -230,7 +247,7 @@ function generateResult() {
                 alert('Something wrong occurred')
             } else {
 
-                let div_result = document.getElementById('renderResult')
+                let div_result = document.getElementById('render-result')
                 div_result.innerHTML = 'Generated files:<br /><ul>'
                 Object.keys(res.files).forEach(function(filename) {
                     div_result.innerHTML += `<li><a href='/files?file_id=${res.files[filename]}'>${filename}</a></li>`
@@ -238,12 +255,27 @@ function generateResult() {
                 div_result.innerHTML += '</ul><br />Download all as archive: '
                 div_result.innerHTML += `<a href='/files?file_id=${res.archive}'>Link</a></li>`
 
+                localStorage.setItem('generated_files', div_result.innerHTML)
+
                 activeTabResult()
             }
         } else {
             console.log("Error " + req.status + " occurred");
         }
-        $('#loadingModal').modal('hide')
+        setTimeout(function() { $('#loadingModal').modal('hide') }, 500);
     };
     req.send(formData);
 }
+
+function onFilenameTemplateChange() {
+    localStorage.setItem('naming_template', document.getElementById('filename-template').value)
+}
+
+// try to load session from localStorage
+window.onload = function() {
+    loadFromStorage()
+    document.getElementById('filename-template').onchange = onFilenameTemplateChange
+    $('#pills-template-tab, #pills-datatable-tab, #pills-render-tab, #pills-result-tab').click(function(event) {
+        localStorage.setItem('currentActivatedTab', event.target.id);
+    })
+};
