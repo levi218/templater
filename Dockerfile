@@ -1,13 +1,15 @@
 FROM ubuntu:18.04
 
 RUN apt-get update
-RUN apt-get install -y python3 python3-pip
+RUN apt-get install -y python3.6 python3-pip
 # RUN apt-get install -y pandoc
 
 ADD app /app
 ADD requirements.txt /app/requirements.txt
 
+ENV PYTHONPATH=/app
 WORKDIR /app
 
 RUN pip3 install -r requirements.txt
-RUN python3 setup.py develop
+RUN cd /usr/local/lib/python3.6/dist-packages && \
+    python3 /app/setup.py develop
