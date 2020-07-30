@@ -5,7 +5,7 @@ from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.expected_conditions import element_to_be_clickable, invisibility_of_element
+from selenium.webdriver.support.expected_conditions import url_to_be, element_to_be_clickable, invisibility_of_element
 
 @parameterized_class([
     {
@@ -54,15 +54,17 @@ class FunctionalTests(unittest.TestCase):
 
         self.template_folder = os.path.abspath('./app/tests/templates')
         self.data_folder = os.path.abspath('./app/tests/data')
-
+        
+        self.driver.get("http://localhost:5000")
+        self.driver.add_cookie({'name' : '_LOCALE_', 'value' : 'en'})
+        
 
     def tearDown(self):
         self.driver.quit()
 
 
     def test_files(self):
-        self.driver.get("http://localhost:5000")
-
+        self.driver.get("http://localhost:5000")  
         self.driver.find_element(
             By.ID, "template-file").send_keys(os.path.join(self.template_folder,self.template))
         self.driver.find_element(By.ID, "btn-upload-template").click()
