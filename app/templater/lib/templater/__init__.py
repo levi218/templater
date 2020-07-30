@@ -67,21 +67,24 @@ class TemplateRenderer(object):
 
     # Looking for missing variables/fields used in csv file and template and print summary
     def verify_template_odt(self, template, renderer = CustomOdtRenderer()):
-        messages = []
+        # messages = []
+        result = { 'in_template': [], 'in_csv' : []}
         test_string = "a"
         no_params = renderer.render_content_to_xml(template)
         # check if each of the fields in csv file exist in template
         for field in self.fieldnames:
             w_param = renderer.render_content_to_xml(template, **{field: test_string})
             if w_param == no_params:
-                messages.append("'{}' not defined in the template".format(field))
+                # messages.append("'{}' not defined in the template".format(field))
+                result['in_template'].append(field)
         # check if any field(s) used in the template is not defined in the csv
         parse_content = Environment().parse(renderer.content_original)
         undeclared_template_variables = meta.find_undeclared_variables(parse_content)
         for variable in undeclared_template_variables:
             if variable not in self.fieldnames:
-                messages.append("'{}' not defined in the csv".format(variable))
-        return messages
+                # messages.append("'{}' not defined in the csv".format(variable))
+                result['in_csv'].append(variable)
+        return result
 
     # render the output files
     def render_output_odt(self, template, output_name_template, renderer = CustomOdtRenderer(), extension = '.odt'):
@@ -97,7 +100,8 @@ class TemplateRenderer(object):
 
     # Looking for missing variables/fields used in csv file and template and print summary
     def verify_template_docx(self, template):
-        messages = []
+        # messages = []
+        result = { 'in_template': [], 'in_csv' : []}
         test_string = "a"
         doc = DocxTemplate(template)
         doc.render({})
@@ -107,13 +111,16 @@ class TemplateRenderer(object):
             doc = DocxTemplate(template)
             doc.render({field: test_string})
             if doc.get_xml() == no_params:
-                messages.append("'{}' not defined in the template".format(field))
+                # messages.append("'{}' not defined in the template".format(field))
+                result['in_template'].append(field)
         # check if any field(s) used in the template is not defined in the csv
         doc = DocxTemplate(template)
         for variable in doc.get_undeclared_template_variables():
             if variable not in self.fieldnames:
-                messages.append("'{}' not defined in the csv".format(variable))
-        return messages
+                # messages.append("'{}' not defined in the csv".format(variable))
+                result['in_csv'].append(variable)
+        # return messages
+        return result
 
     # render the output files
     def render_output_docx(self, template, output_name_template):

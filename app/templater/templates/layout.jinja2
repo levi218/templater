@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="description" content="pyramid web application" />
         <meta name="author" content="Pylons Project" />
-        <link rel="shortcut icon" href="{{request.static_url('templater:static/pyramid-16x16.png')}}" />
+        <link rel="shortcut icon" href="{{request.static_url('templater:static/img/pyramid-16x16.png')}}" />
 
         <title>Templater</title>
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
@@ -14,7 +14,7 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous" />
 
         <!-- Custom styles for this scaffold -->
-        <link href="{{request.static_url('templater:static/theme.css')}}" rel="stylesheet" />
+        <link href="{{request.static_url('templater:static/css/theme.css')}}" rel="stylesheet" />
 
         <!-- HTML5 shiv and Respond.js IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
@@ -29,19 +29,16 @@
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-                {#            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="nav navbar-nav ml-auto w-100 justify-content-end">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Home</a>
+                        <a class='nav-link' href="/locale?language=en">EN</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">About</a>
+                        <a class='nav-link' href="/locale?language=ru">RU</a>
                     </li>
                 </ul>
-            </div> #}
+            </div>
         </nav>
 
         <div class="container-fluid">
