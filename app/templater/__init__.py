@@ -10,7 +10,8 @@ from pymongo import MongoClient
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
-
+    settings = dict(settings)
+    settings.setdefault('jinja2.i18n.domain', 'templater')
     config =  Configurator(settings=settings)
     # db_url = urlparse(settings['mongo_uri'])
     
@@ -44,6 +45,8 @@ def main(global_config, **settings):
 
     config.add_request_method(add_db, 'db', reify=True)
     config.add_request_method(add_fs, 'fs', reify=True)
+    
+    config.add_translation_dirs('locale/')
 
     config.include('pyramid_jinja2')
     config.include('.routes')

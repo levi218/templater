@@ -4,12 +4,13 @@ RUN apt-get update
 RUN apt-get install -y python3.6 python3-pip
 # RUN apt-get install -y pandoc
 
+ADD requirements.txt /requirements.txt
+RUN pip3 install -r requirements.txt
+
 ADD app /app
-ADD requirements.txt /app/requirements.txt
 
 ENV PYTHONPATH=/app
 WORKDIR /app
 
-RUN pip3 install -r requirements.txt
 RUN cd /usr/local/lib/python3.6/dist-packages && \
     python3 /app/setup.py develop

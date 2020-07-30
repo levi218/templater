@@ -1,5 +1,6 @@
 let template_id;
 let data_table_id;
+let template_name;
 
 function upload(file, callback, processBar, tablePreview = false) {
     // let url = window.location.origin + "/upload"
@@ -45,10 +46,11 @@ function uploadTemplate() {
     $('#progress-template').val(0)
     upload(file, function(res) {
         template_id = res.file_id;
-
+        template_name = res.file_name;
         // save in local storage
-        localStorage.setItem('template_file', JSON.stringify({ id: template_id, expire_at: res.expire_at }))
+        localStorage.setItem('template_file', JSON.stringify({ id: template_id, name: template_name, expire_at: res.expire_at }))
         $('#pills-render-tab, #pills-result-tab').toggleClass('disabled', true);
+
         showTemplatePreview()
     }, $('#progress-template'))
 }
@@ -56,13 +58,28 @@ function uploadTemplate() {
 function showTemplatePreview() {
     $('#template-next-group, #template-preview').toggleClass('d-none', false);
     $('#btn-upload-template').toggleClass('btn-primary', false).toggleClass('btn-secondary', true)
-        // show preview if not on localhost   
-    let url = "https://docs.google.com/gview?url=" + window.location.origin + "/files?file_id=" + template_id + "&embedded=true";
-    if (window.location.hostname != "localhost") {
-        $('#iframe-template-preview').attr('src', url)
-    } else {
-        console.log(url)
+
+    // show preview using gg docs (not available on localhost) for types and ViewerJS for others 
+    let ifrm = document.createElement("iframe");
+    ifrm.setAttribute("id", 'iframe-template-preview');
+    ifrm.style.width = "100%";
+    ifrm.style.height = "500px";
+
+    if (['docx', 'pptx', 'xlsx'].indexOf(template_name.split('.').pop()) != -1) {
+        let url = "https://docs.google.com/gview?url=" + window.location.origin + "/files?file_id=" + template_id + "&embedded=true";
+        if (window.location.hostname != "localhost") {
+            ifrm.setAttribute("src", url);
+        } else {
+            console.log(url)
+        }
+    } else if (['ods', 'odp', 'odt'].indexOf(template_name.split('.').pop()) != -1) {
+        let url = window.location.origin + "/ViewerJS/#../files?file_id=" + template_id;
+        console.log(url);
+        ifrm.setAttribute("src", url);
     }
+    let container = document.getElementById('preview-container')
+    container.innerHTML = ''
+    container.appendChild(ifrm)
 }
 
 function uploadData() {
@@ -148,6 +165,7 @@ function activeTabResult(updateStorage = true) {
 
 function resetForms() {
     template_id = null;
+    template_name = null;
     data_table_id = null;
     clearSessionLocalStorage()
     $('#pills-template-tab').tab('show');
@@ -169,7 +187,6 @@ function appendJinjaTag(element) {
 
 function verifyTemplate() {
     if (!template_id || !data_table_id) return;
-    console.log('1')
     $('#loadingModal').modal('show')
         // send request to verify-url with template_id and data_table_id and put result to #verificationResult
     var formData = new FormData();
@@ -179,9 +196,22 @@ function verifyTemplate() {
 
     formData.append("name-pattern", data_table_id);
 
+    // TODO: default if cookie not set??
+
+    function getLocale() {
+        const def_val = 'ru'
+        if (document.cookie) {
+            let entry = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('_LOCALE_'))
+            if (entry) return entry.split('=')[1];
+            else return def_val
+        } else return def_val
+    }
+
     var req = new XMLHttpRequest();
 
-    req.open("POST", "/verify", true);
+    req.open("POST", "/verify?_LOCALE_=" + getLocale(), true);
 
     req.onload = function(event) {
         if (req.status == 200) {
@@ -193,13 +223,9 @@ function verifyTemplate() {
 
                 let div_verification = document.getElementById('verificationResult')
 
-                if (res.messages.length == 0) {
-                    div_verification.innerHTML = `Verification done without warning`
-                } else {
-                    div_verification.innerHTML = ''
-                    for (message of res.messages) {
-                        div_verification.innerHTML += `<p>${message}</p>`
-                    }
+                div_verification.innerHTML = ''
+                for (message of res.messages) {
+                    div_verification.innerHTML += `<p>${message}</p>`
                 }
 
                 let input_name_template = document.getElementById('filename-template')
@@ -249,12 +275,21 @@ function generateResult() {
             } else {
 
                 let div_result = document.getElementById('render-result')
-                div_result.innerHTML = 'Generated files:<br /><ul>'
-                Object.keys(res.files).forEach(function(filename) {
-                    div_result.innerHTML += `<li><a href='/files?file_id=${res.files[filename]}'>${filename}</a></li>`
-                });
-                div_result.innerHTML += '</ul><br />Download all as archive: '
-                div_result.innerHTML += `<a href='/files?file_id=${res.archive}'>Link</a></li>`
+                    //div_result.innerHTML = 'Generated files:<br /><ul>'
+                let div_files = document.getElementById('link-files');
+
+                let link_files = "<ul>"
+                    // div_files.innerHTML = '<ul>'
+
+                for (let filename in res.files) {
+                    // div_files.innerHTML += `<li><a href='/files?file_id=${res.files[filename]}'>${filename}</a></li>`
+                    link_files += `<li><a href='/files?file_id=${res.files[filename]}'>${filename}</a></li>`
+                };
+                link_files += "</ul>"
+                div_files.innerHTML = link_files
+
+                let div_archive = document.getElementById('link-archive');
+                div_archive.innerHTML = `<a href='/files?file_id=${res.archive}'>${res.archive_name}</a>`
 
                 localStorage.setItem('generated_files', div_result.innerHTML)
 

@@ -27,6 +27,7 @@ function loadFromStorage() {
     if (localStorage.getItem('template_file')) {
         let json = JSON.parse(localStorage.getItem('template_file'))
         template_id = json.id
+        template_name = json.name
         showTemplatePreview()
         activeTabDataTable(false)
     }
