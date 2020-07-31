@@ -13,4 +13,4 @@
 
 или
 
-    python -m unittest ./app/templater/tests.py
+    python -m unittest app/templater/tests.py
