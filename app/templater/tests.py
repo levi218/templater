@@ -49,14 +49,15 @@ class FunctionalTests(unittest.TestCase):
     def setUp(self):
         options = Options()
         options.headless = True
+        options.add_argument('--no-sandbox')
+        options.add_argument('--window-size=1420,1080')
+        options.add_argument('--allow-insecure-localhost')
         options.add_experimental_option('excludeSwitches', ['enable-logging'])
         self.driver = Chrome(options=options)
 
         self.template_folder = os.path.abspath('./app/tests/templates')
         self.data_folder = os.path.abspath('./app/tests/data')
         
-        self.driver.get("http://localhost:5000")
-        self.driver.add_cookie({'name' : '_LOCALE_', 'value' : 'en'})
         
 
     def tearDown(self):
@@ -64,7 +65,17 @@ class FunctionalTests(unittest.TestCase):
 
 
     def test_files(self):
-        self.driver.get("http://localhost:5000")  
+        self.driver.get("http://localhost:5000/")  
+
+        if(len(self.driver.find_element(By.TAG_NAME, 'body').get_attribute('innerHTML'))==0):
+            self.driver.get("http://web:5000/")
+        
+        self.driver.find_element(
+            By.CSS_SELECTOR, "#navbarNav ul li:first-child a").click()
+        
+        # print(self.driver.current_url)
+        # self.driver.add_cookie({'name' : '_LOCALE_', 'value' : 'en'})
+        self.driver.refresh()
         self.driver.find_element(
             By.ID, "template-file").send_keys(os.path.join(self.template_folder,self.template))
         self.driver.find_element(By.ID, "btn-upload-template").click()

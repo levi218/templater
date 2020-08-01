@@ -1,0 +1,33 @@
+version: '2.1'
+services:
+    sut:
+        build:
+            context: .
+            dockerfile: Dockerfile.test
+        command: pytest /app/templater/tests.py -s
+        volumes:
+            - ./app:/app
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://web:5000"]
+            interval: 30s
+            timeout: 10s
+            retries: 5
+        links:
+            - web
+    web:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        command: python3 -u runapp.py
+        logging:
+            driver: "none"
+        # ports:
+        #     - "5000:5000"
+        volumes:
+            - ./app:/app
+        links:
+            - db
+    db:
+        image: mongo:3.6
+        logging:
+            driver: "none"
