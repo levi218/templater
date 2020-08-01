@@ -96,14 +96,14 @@ class FunctionalTests(unittest.TestCase):
             element_to_be_clickable((By.ID, "btn-verify")))
         self.driver.find_element(By.ID, "btn-verify").click()
 
-        WebDriverWait(self.driver, timeout=10).until(
+        WebDriverWait(self.driver, timeout=20).until(
             element_to_be_clickable((By.ID, "btn-generate")))
         # check for verification result
         verification_result = self.driver.find_element(By.ID, 'verificationResult').get_attribute('innerHTML')
         self.assertEqual(verification_result, self.verification_mes)
         
         self.driver.find_element(By.ID, "btn-generate").click()
-        WebDriverWait(self.driver, timeout=10).until(element_to_be_clickable(
+        WebDriverWait(self.driver, timeout=20).until(element_to_be_clickable(
             (By.CSS_SELECTOR, "#pills-result .row .col-md .text-center input")))
         
         no_files = len(self.driver.find_element(By.CSS_SELECTOR, '#link-files ul').find_elements_by_tag_name('li'))
