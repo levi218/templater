@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: templater 0.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2020-07-29 22:32+0300\n"
+"POT-Creation-Date: 2020-08-03 12:52+0300\n"
 "PO-Revision-Date: 2020-07-29 00:25+0300\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.8.0\n"
 
-#: templater/templates/homepage.jinja2:6
+#: templater/templates/homepage.jinja2:9
 msgid ""
 "Quickly generate documents from docx/odt template using data from "
 "csv/xls/xlsx file."
@@ -98,6 +98,22 @@ msgstr "или скачать все в архиве:"
 #: templater/templates/homepage.jinja2:143
 msgid "Start with another file"
 msgstr "Начать с другим файлом"
+
+#: templater/templates/homepage.jinja2:154
+msgid "HOW TO USE"
+msgstr "КАК ПОЛЬЗОВАТЬ?"
+
+#: templater/templates/homepage.jinja2:167
+msgid "Create a document with jinja2 placeholder"
+msgstr "Создать документ с заполнителем jinja2 (поддерживается docx, xlsx, pptx, odt, ods, odp)"
+
+#: templater/templates/homepage.jinja2:191
+msgid "Create a data table"
+msgstr "Создать таблицу данных (поддерживается csv, xls, xlsx)"
+
+#: templater/templates/homepage.jinja2:214
+msgid "Upload to Templater and get the filled in documents"
+msgstr "Загрузить в Templater и получить заполненные документы"
 
 #: templater/views/default.py:73
 msgid "${field} not defined in the template"
