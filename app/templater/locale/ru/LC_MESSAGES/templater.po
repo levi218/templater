@@ -101,19 +101,19 @@ msgstr "Начать с другим файлом"
 
 #: templater/templates/homepage.jinja2:154
 msgid "HOW TO USE"
-msgstr "КАК ПОЛЬЗОВАТЬ?"
+msgstr "КАК ИСПОЛЬЗОВАТЬ?"
 
 #: templater/templates/homepage.jinja2:167
 msgid "Create a document with jinja2 placeholder"
-msgstr "Создать документ с заполнителем jinja2 (поддерживается docx, xlsx, pptx, odt, ods, odp)"
+msgstr "Создать документ-шаблон с полями для подстановки вида {{ название_поля }} . Поддерживаемые форматы документов: docx, xlsx, pptx, odt, ods, odp."
 
 #: templater/templates/homepage.jinja2:191
 msgid "Create a data table"
-msgstr "Создать таблицу данных (поддерживается csv, xls, xlsx)"
+msgstr "Создать таблицу данных. Каждая строка таблицы будет использована для создания отдельного документа по шаблону. Поддерживаемые форматы таблиц: xls, xlsx, csv."
 
 #: templater/templates/homepage.jinja2:214
 msgid "Upload to Templater and get the filled in documents"
-msgstr "Загрузить в Templater и получить заполненные документы"
+msgstr "Загрузить документ-шаблон и таблицу данных в Templater и получить заполненные документы."
 
 #: templater/views/default.py:73
 msgid "${field} not defined in the template"
